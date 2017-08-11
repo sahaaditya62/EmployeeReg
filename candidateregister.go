@@ -78,7 +78,7 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 		&shim.ColumnDefinition{Name: "country", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "city", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "zip", Type: shim.ColumnDefinition_STRING, Key: false},
-		&shim.ColumnDefinition{Name: "State", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "state", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "verifyStatus", Type: shim.ColumnDefinition_STRING, Key: false},
 	})
 	if err != nil {
@@ -151,19 +151,19 @@ if len(args) != 16 {
 		country:=args[12]
 		city:=args[13]
 		zip:=args[14]
-		State:=args[15]
+		state:=args[15]
 		verifyStatus:="false"
 			
 			
 		stub.PutState(uniqueIdNumber,[]byte(candidateId))
-			
+		/*	
 		assignerOrg, err := stub.GetState(candidateId)
 		if assignerOrg !=nil{
 			return nil, fmt.Errorf("Candidate already registered %s",candidateId)
 		} else if err !=nil{
 			return nil, fmt.Errorf("System error")
 		}
-		
+		*/
 		
 		// Insert a row
 		ok, err := stub.InsertRow("CandidateDetails", shim.Row{
@@ -183,7 +183,7 @@ if len(args) != 16 {
 				&shim.Column{Value: &shim.Column_String_{String_: country}},
 				&shim.Column{Value: &shim.Column_String_{String_: city}},
 				&shim.Column{Value: &shim.Column_String_{String_: zip}},
-				&shim.Column{Value: &shim.Column_String_{String_: State}},
+				&shim.Column{Value: &shim.Column_String_{String_: state}},
 				&shim.Column{Value: &shim.Column_String_{String_: verifyStatus}},
 			}})
 
@@ -201,19 +201,38 @@ if len(args) != 16 {
 //UpdateCandidateDetails to verified a user
 func (t *CandidateInfoStore) UpdateCandidateDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-if len(args) != 1 {
+if len(args) < 1 {
 			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 1. Got: %d.", len(args))
 		}
 		candidateId:=args[0]
 	
-	// Get the row pertaining to this candidateId
-	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_String_{String_: candidateId}}
-	columns = append(columns, col1)
-	
-	row, err := stub.GetRow("CandidateDetails", columns)
+		var columns []shim.Column
+		col1 := shim.Column{Value: &shim.Column_String_{String_: candidateId}}
+		columns = append(columns, col1)
+
+		row, err := stub.GetRow("CandidateDetails", columns)
+		if err != nil {
+			return nil, fmt.Errorf("Error: Failed retrieving application with candidateId %s. Error %s", candidateId, err.Error())
+		}
+
+		// GetRows returns empty message if key does not exist
+		if len(row.Columns) == 0 {
+			return nil, nil
+		}
+
+		//End- Check that the currentStatus to newStatus transition is accurate
+		// Delete the row pertaining to this applicationId
+		err = stub.DeleteRow(
+			"CandidateDetails",
+			columns,
+		)
+		if err != nil {
+			return nil, errors.New("Failed deleting row.")
+		}
 		
-		candidateId=row.Columns[0].GetString_()
+		status:="true"
+		
+		//candidateId:=row.Columns[0].GetString_()
 		title:=row.Columns[1].GetString_()
 		gender:=row.Columns[2].GetString_()
 		firstName:=row.Columns[3].GetString_()
@@ -228,9 +247,18 @@ if len(args) != 1 {
 		country:=row.Columns[12].GetString_()
 		city:=row.Columns[13].GetString_()
 		zip:=row.Columns[14].GetString_()
-		State:=row.Columns[15].GetString_()
-		verifyStatus:="true"
+		state:=row.Columns[15].GetString_()
+		verifyStatus:=status
 		
+		
+		err = stub.DeleteRow(
+					"CandidateDetails",
+					columns,
+				)
+		if err != nil {
+			return nil, errors.New("Failed deleting row.")
+		}
+
 		// Insert a row
 		ok, err := stub.InsertRow("CandidateDetails", shim.Row{
 			Columns: []*shim.Column{
@@ -249,7 +277,7 @@ if len(args) != 1 {
 				&shim.Column{Value: &shim.Column_String_{String_: country}},
 				&shim.Column{Value: &shim.Column_String_{String_: city}},
 				&shim.Column{Value: &shim.Column_String_{String_: zip}},
-				&shim.Column{Value: &shim.Column_String_{String_: State}},
+				&shim.Column{Value: &shim.Column_String_{String_: state}},
 				&shim.Column{Value: &shim.Column_String_{String_: verifyStatus}},
 			}})
 
