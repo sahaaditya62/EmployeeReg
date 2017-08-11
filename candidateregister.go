@@ -94,7 +94,6 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 	// Create application Table
 	err = stub.CreateTable("CertificateDetails", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "uniqueIdNumber", Type: shim.ColumnDefinition_STRING, Key: true},
-		&shim.ColumnDefinition{Name: "organization", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "degree", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "marks", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "grade", Type: shim.ColumnDefinition_STRING, Key: false},
@@ -113,6 +112,7 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 	// Create application Table
 	err = stub.CreateTable("ExperienceDetails", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "uniqueIdNumber", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "organization", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "doj", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "designation", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "skillset", Type: shim.ColumnDefinition_STRING, Key: false},
@@ -585,11 +585,13 @@ func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.Chain
 	
 	newCan2 := ExperienceDetails{}
 	newCan2.UniqueIdNumber = row2.Columns[0].GetString_()
-	newCan2.DOJ = row2.Columns[1].GetString_()
-	newCan2.Designation = row2.Columns[2].GetString_()
-	newCan2.Skillset = row2.Columns[3].GetString_()
-	newCan2.Certification = row2.Columns[4].GetString_()
-	newCan2.Salary = row2.Columns[5].GetString_()
+	newCan2.UniqueIdNumber = row2.Columns[1].GetString_()
+	newCan2.DOJ = row2.Columns[2].GetString_()
+	newCan2.Designation = row2.Columns[3].GetString_()
+	newCan2.Skillset = row2.Columns[4].GetString_()
+	newCan2.Certification = row2.Columns[5].GetString_()
+	newCan2.Salary = row2.Columns[6].GetString_()
+	newCan2.UniqueIdNumber = row2.Columns[7].GetString_()
 	
 
 	newCan := CandidateDetails{}
