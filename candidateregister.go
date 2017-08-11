@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -46,11 +45,13 @@ type CandidateDetails struct{
 	
 	type ExperienceDetails struct{
 	UniqueIdNumber string `json:"uniqueIdNumber"`
+	Organization string `json:"organization"`
 	DOJ string `json:"doj"`
 	Designation string `json:"designation"`
 	Skillset string `json:"skillset"`
 	Certification string `json:"certification"`
 	Salary string `json:"salary"`
+	DOL string `json:"dol"`
 	}
 
 func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
@@ -93,6 +94,7 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 	// Create application Table
 	err = stub.CreateTable("CertificateDetails", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "uniqueIdNumber", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "organization", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "degree", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "marks", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "grade", Type: shim.ColumnDefinition_STRING, Key: false},
@@ -116,6 +118,7 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 		&shim.ColumnDefinition{Name: "skillset", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "certification", Type: shim.ColumnDefinition_STRING, Key: false},
 		&shim.ColumnDefinition{Name: "salary", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "dol", Type: shim.ColumnDefinition_STRING, Key: false},
 		})
 	if err != nil {
 		return nil, errors.New("Failed creating ExperienceDetails.")
@@ -339,15 +342,17 @@ if len(args) != 6 {
 //Issue Experience Details to registered user
 func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-if len(args) != 6 {
-			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 6. Got: %d.", len(args))
+if len(args) != 8 {
+			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 8. Got: %d.", len(args))
 		}
 		uniqueIdNumber:=args[0]
-		doj:=args[1]
-		designation:=args[2]
-		skillset:=args[3]
-		certification:=args[4]
-		salary:=args[5]
+		organization:=args[1]
+		doj:=args[2]
+		designation:=args[3]
+		skillset:=args[4]
+		certification:=args[5]
+		salary:=args[6]
+		dol:=args[7]
 		
 		
 		
@@ -363,11 +368,13 @@ if len(args) != 6 {
 		ok, err := stub.InsertRow("ExperienceDetails", shim.Row{
 			Columns: []*shim.Column{
 				&shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}},
+				&shim.Column{Value: &shim.Column_String_{String_: organization}},
 				&shim.Column{Value: &shim.Column_String_{String_: doj}},
 				&shim.Column{Value: &shim.Column_String_{String_: designation}},
 				&shim.Column{Value: &shim.Column_String_{String_: skillset}},
 				&shim.Column{Value: &shim.Column_String_{String_: certification}},
 				&shim.Column{Value: &shim.Column_String_{String_: salary}},
+				&shim.Column{Value: &shim.Column_String_{String_: dol}},
 				}})
 
 		if err != nil {
@@ -451,11 +458,13 @@ func (t *CandidateInfoStore) getExperienceDetails(stub shim.ChaincodeStubInterfa
 
 	newCan := ExperienceDetails{}
 	newCan.UniqueIdNumber = row.Columns[0].GetString_()
-	newCan.DOJ = row.Columns[1].GetString_()
-	newCan.Designation = row.Columns[2].GetString_()
-	newCan.Skillset = row.Columns[3].GetString_()
-	newCan.Certification = row.Columns[4].GetString_()
-	newCan.Salary = row.Columns[5].GetString_()
+	newCan.Organization = row.Columns[1].GetString_()
+	newCan.DOJ = row.Columns[2].GetString_()
+	newCan.Designation = row.Columns[3].GetString_()
+	newCan.Skillset = row.Columns[4].GetString_()
+	newCan.Certification = row.Columns[5].GetString_()
+	newCan.Salary = row.Columns[6].GetString_()
+	newCan.DOJ = row.Columns[7].GetString_()
 		
     mapB, _ := json.Marshal(newCan)
     fmt.Println(string(mapB))
@@ -463,49 +472,6 @@ func (t *CandidateInfoStore) getExperienceDetails(stub shim.ChaincodeStubInterfa
 	return mapB, nil
 
 }
-
-
-
-/*
-func (t *CandidateInfoStore) getAllCandidate(stub shim.ChaincodeStubInterface , args []string) ([]byte, error) {
-	// Get the row pertaining to this candidateId
-	var columns []shim.Column
-	rows, err := stub.GetRows("CandidateDetails", columns)
-	if err != nil {
-		jsonResp := "{\"Error\":\"Failed to get the data for the application \"}"
-		return nil, errors.New(jsonResp)
-	}
-	
-	res2E := []*CandidateDetails{}
-	
-	for row := range rows{
-	newCan := new (CandidateDetails)
-	newCan.CandidateId = row.Columns[0].GetString_()
-	newCan.Title = row.Columns[1].GetString_()
-	newCan.Gender = row.Columns[2].GetString_()
-	newCan.FirstName = row.Columns[3].GetString_()
-	newCan.LastName = row.Columns[4].GetString_()
-	newCan.DOB = row.Columns[5].GetString_()
-	newCan.EmailID = row.Columns[6].GetString_()
-	newCan.PhoneNumber = row.Columns[7].GetString_()
-	newCan.UniqueIdType = row.Columns[8].GetString_()
-	newCan.UniqueIdNumber = row.Columns[9].GetString_()
-	newCan.Nationality = row.Columns[10].GetString_()
-	newCan.Address = row.Columns[11].GetString_()
-	newCan.Country = row.Columns[12].GetString_()
-	newCan.City = row.Columns[13].GetString_()
-	newCan.Zip = row.Columns[14].GetString_()
-	newCan.State = row.Columns[15].GetString_()
-	newCan.verifyStatus = row.Columns[16].GetString_()
-	res2E=append(res2E,newCan)
-}
-    mapB, _ := json.Marshal(res2E)
-    fmt.Println(string(mapB))
-	return mapB, nil
-}
-*/
-
-
 
 func (t *CandidateInfoStore) getCandidateByUniqId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
@@ -571,12 +537,16 @@ func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.Chain
 	}
 
 	uniqueIdNumber := args[0]
-
+	candidateid, err := stub.GetState(uniqueIdNumber)
 
 	// Get the row pertaining to this uniqueIdNumber
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: string(candidateid)}}
 	columns = append(columns, col1)
+	
+	var columns1 []shim.Column
+	col2 := shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}}
+	columns1 = append(columns1, col2)
 
 	row, err := stub.GetRow("CandidateDetails", columns)
 	if err != nil {
@@ -584,8 +554,13 @@ func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.Chain
 		return nil, errors.New(jsonResp)
 	}
 	
-	row1, err1 := stub.GetRow("CertificateDetails", columns)
+	row1, err1 := stub.GetRow("CertificateDetails", columns1)
 	if err1 != nil {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+	row2, err2 := stub.GetRow("ExperienceDetails", columns1)
+	if err2 != nil {
 		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
 		return nil, errors.New(jsonResp)
 	}
@@ -607,6 +582,14 @@ func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.Chain
 	newCan1.Grade = row1.Columns[3].GetString_()
 	newCan1.Year = row1.Columns[4].GetString_()
 	newCan1.UniversityName = row1.Columns[5].GetString_()
+	
+	newCan2 := ExperienceDetails{}
+	newCan2.UniqueIdNumber = row2.Columns[0].GetString_()
+	newCan2.DOJ = row2.Columns[1].GetString_()
+	newCan2.Designation = row2.Columns[2].GetString_()
+	newCan2.Skillset = row2.Columns[3].GetString_()
+	newCan2.Certification = row2.Columns[4].GetString_()
+	newCan2.Salary = row2.Columns[5].GetString_()
 	
 
 	newCan := CandidateDetails{}
@@ -630,14 +613,16 @@ func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.Chain
 	
 	type CandidateDetailsMerge struct{
     CertificateDetail CertificateDetails `json:"CertificateDetail"`
+	ExperienceDetails ExperienceDetails `json:"ExperienceDetails"`
 	CandidateDetails CandidateDetails `json:"CandidateDetails"`
 	}
 	
-	newCan2 := CandidateDetailsMerge{}
-	newCan2.CertificateDetail=newCan1
-	newCan2.CandidateDetails=newCan
+	newCan3 := CandidateDetailsMerge{}
+	newCan3.CertificateDetail=newCan1
+	newCan3.ExperienceDetails=newCan2
+	newCan3.CandidateDetails=newCan
 	
-    mapB, _ := json.Marshal(newCan2)
+    mapB, _ := json.Marshal(newCan3)
     fmt.Println(string(mapB))
 
 	return mapB, nil
