@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -156,26 +157,13 @@ if len(args) != 1 {
 			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 1. Got: %d.", len(args))
 		}
 		candidateId:=args[0]
-		
-		
-		
-			// Get the row pertaining to this candidateId
-		var columns []shim.Column
-		col1 := shim.Column{Value: &shim.Column_String_{String_: candidateId}}
-		columns = append(columns, col1)
-
-		row, err := stub.GetRow("CandidateDetails", columns)
-		if err != nil {
-			jsonResp := "{\"Error\":\"Failed to get the data for the application " + candidateId + "\"}"
-			return nil, errors.New(jsonResp)
-		}
-
-		// GetRows returns empty message if key does not exist
-		if len(row.Columns) == 0 {
-			jsonResp := "{\"Error\":\"Failed to get the data for the application " + candidateId + "\"}"
-			return nil, errors.New(jsonResp)
-		}
-		
+	
+	// Get the row pertaining to this candidateId
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: candidateId}}
+	columns = append(columns, col1)
+	
+	row, err := stub.GetRow("CandidateDetails", columns)
 		
 		candidateId=row.Columns[0].GetString_()
 		title:=row.Columns[1].GetString_()
@@ -228,7 +216,6 @@ if len(args) != 1 {
 
 }
 
-
 //Issue Certificate to register a user
 func (t *CandidateInfoStore) CertificateIssue(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
@@ -273,10 +260,52 @@ if len(args) != 6 {
 
 }
 
+func (t *CandidateInfoStore) getCandidateCertificate(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting uniqueIdNumber to query")
+	}
+
+	uniqueIdNumber := args[0]
+
+
+	// Get the row pertaining to this uniqueIdNumber
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}}
+	columns = append(columns, col1)
+
+	row, err := stub.GetRow("CertificateDetails", columns)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	// GetRows returns empty message if key does not exist
+	if len(row.Columns) == 0 {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+
+	newCan := CertificateDetails{}
+	newCan.UniqueIdNumber = row.Columns[0].GetString_()
+	newCan.Degree = row.Columns[1].GetString_()
+	newCan.Marks = row.Columns[2].GetString_()
+	newCan.Grade = row.Columns[3].GetString_()
+	newCan.Year = row.Columns[4].GetString_()
+	newCan.UniversityName = row.Columns[5].GetString_()
+		
+    mapB, _ := json.Marshal(newCan)
+    fmt.Println(string(mapB))
+
+	return mapB, nil
+
+}
+
+
 
 /*
 func (t *CandidateInfoStore) getAllCandidate(stub shim.ChaincodeStubInterface , args []string) ([]byte, error) {
-
 	// Get the row pertaining to this candidateId
 	var columns []shim.Column
 	rows, err := stub.GetRows("CandidateDetails", columns)
@@ -284,10 +313,7 @@ func (t *CandidateInfoStore) getAllCandidate(stub shim.ChaincodeStubInterface , 
 		jsonResp := "{\"Error\":\"Failed to get the data for the application \"}"
 		return nil, errors.New(jsonResp)
 	}
-
 	
-
-
 	res2E := []*CandidateDetails{}
 	
 	for row := range rows{
@@ -311,14 +337,14 @@ func (t *CandidateInfoStore) getAllCandidate(stub shim.ChaincodeStubInterface , 
 	newCan.verifyStatus = row.Columns[16].GetString_()
 	res2E=append(res2E,newCan)
 }
-
     mapB, _ := json.Marshal(res2E)
     fmt.Println(string(mapB))
-
 	return mapB, nil
-
 }
 */
+
+
+
 func (t *CandidateInfoStore) getCandidateByUniqId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
@@ -371,6 +397,87 @@ func (t *CandidateInfoStore) getCandidateByUniqId(stub shim.ChaincodeStubInterfa
 	return mapB, nil
 
 }
+
+func (t *CandidateInfoStore) getCandidateByUniqIdWithCertificate(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	if len(args) != 1 {
+		return nil, errors.New("Incorrect number of arguments. Expecting uniqueIdNumber to query")
+	}
+
+	uniqueIdNumber := args[0]
+
+
+	// Get the row pertaining to this uniqueIdNumber
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}}
+	columns = append(columns, col1)
+
+	row, err := stub.GetRow("CandidateDetails", columns)
+	if err != nil {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+	
+	row1, err1 := stub.GetRow("CertificateDetails", columns)
+	if err1 != nil {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	// GetRows returns empty message if key does not exist
+	if len(row.Columns) == 0 {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+	if len(row1.Columns) == 0 {
+		jsonResp := "{\"Error\":\"Failed to get the data for the application " + uniqueIdNumber + "\"}"
+		return nil, errors.New(jsonResp)
+	}
+
+	newCan1 := CertificateDetails{}
+	newCan1.UniqueIdNumber = row1.Columns[0].GetString_()
+	newCan1.Degree = row1.Columns[1].GetString_()
+	newCan1.Marks = row1.Columns[2].GetString_()
+	newCan1.Grade = row1.Columns[3].GetString_()
+	newCan1.Year = row1.Columns[4].GetString_()
+	newCan1.UniversityName = row1.Columns[5].GetString_()
+	
+
+	newCan := CandidateDetails{}
+	newCan.CandidateId = row.Columns[0].GetString_()
+	newCan.Title = row.Columns[1].GetString_()
+	newCan.Gender = row.Columns[2].GetString_()
+	newCan.FirstName = row.Columns[3].GetString_()
+	newCan.LastName = row.Columns[4].GetString_()
+	newCan.DOB = row.Columns[5].GetString_()
+	newCan.EmailID = row.Columns[6].GetString_()
+	newCan.PhoneNumber = row.Columns[7].GetString_()
+	newCan.UniqueIdType = row.Columns[8].GetString_()
+	newCan.UniqueIdNumber = row.Columns[9].GetString_()
+	newCan.Nationality = row.Columns[10].GetString_()
+	newCan.Address = row.Columns[11].GetString_()
+	newCan.Country = row.Columns[12].GetString_()
+	newCan.City = row.Columns[13].GetString_()
+	newCan.Zip = row.Columns[14].GetString_()
+	newCan.State = row.Columns[15].GetString_()
+	newCan.VerifyStatus = row.Columns[16].GetString_()
+	
+	type CandidateDetailsMerge struct{
+    CertificateDetail CertificateDetails `json:"CertificateDetail"`
+	CandidateDetails CandidateDetails `json:"CandidateDetails"`
+	}
+	
+	newCan2 := CandidateDetailsMerge{}
+	newCan2.CertificateDetail=newCan1
+	newCan2.CandidateDetails=newCan
+	
+    mapB, _ := json.Marshal(newCan2)
+    fmt.Println(string(mapB))
+
+	return mapB, nil
+
+}
+
 
 func (t *CandidateInfoStore) getAllCandidate(stub shim.ChaincodeStubInterface , args []string) ([]byte, error) {
 
@@ -496,7 +603,13 @@ func (t *CandidateInfoStore) Query(stub shim.ChaincodeStubInterface, function st
     } else if function == "getCandidateByUniqId"{
         t := CandidateInfoStore{}
 		return t.getCandidateByUniqId(stub, args)  
-    } 
+    } else if function == "getCandidateByUniqIdWithCertificate"{
+        t := CandidateInfoStore{}
+		return t.getCandidateByUniqIdWithCertificate(stub, args)  
+    }else if function == "getCandidateCertificate"{
+        t := CandidateInfoStore{}
+		return t.getCandidateCertificate(stub, args)  
+    }
 	
 	return nil, nil
 }
