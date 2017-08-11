@@ -43,7 +43,15 @@ type CandidateDetails struct{
 	Year string `json:"year"`
 	UniversityName string `json:"universityName"`
 	}
-
+	
+	type ExperienceDetails struct{
+	UniqueIdNumber string `json:"uniqueIdNumber"`
+	DOJ string `json:"doj"`
+	Designation string `json:"designation"`
+	Skillset string `json:"skillset"`
+	Certification string `json:"certification"`
+	Salary string `json:"salary"`
+	}
 
 func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
@@ -76,11 +84,48 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 	if err != nil {
 		return nil, errors.New("Failed creating CandidateDetails.")
 	}
+	
+	_, err = stub.GetTable("CertificateDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	// Create application Table
+	err = stub.CreateTable("CertificateDetails", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "uniqueIdNumber", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "degree", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "marks", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "grade", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "year", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "universityName", Type: shim.ColumnDefinition_STRING, Key: false},
+	})
+	if err != nil {
+		return nil, errors.New("Failed creating CertificateDetails.")
+	}
+	
+	_, err = stub.GetTable("ExperienceDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	// Create application Table
+	err = stub.CreateTable("ExperienceDetails", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "uniqueIdNumber", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "doj", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "designation", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "skillset", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "certification", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "salary", Type: shim.ColumnDefinition_STRING, Key: false},
+		})
+	if err != nil {
+		return nil, errors.New("Failed creating ExperienceDetails.")
+	}
+	
 	// setting up the users role
 	stub.PutState("user_type1_1", []byte("Govt"))
 	stub.PutState("user_type1_2", []byte("IBM"))
 	stub.PutState("user_type1_3", []byte("CTS"))
-	stub.PutState("user_type1_4", []byte("????"))	
+	stub.PutState("user_type1_4", []byte("University"))	
 	
 	return nil, nil
 }
@@ -88,8 +133,8 @@ func (t *CandidateInfoStore) Init(stub shim.ChaincodeStubInterface, function str
 //registerUser to register a user
 func (t *CandidateInfoStore) CandidateRegister(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
-if len(args) != 17 {
-			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 17. Got: %d.", len(args))
+if len(args) != 16 {
+			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 16. Got: %d.", len(args))
 		}
 		candidateId:=args[0]
 		title:=args[1]
@@ -247,6 +292,51 @@ if len(args) != 6 {
 				&shim.Column{Value: &shim.Column_String_{String_: grade}},
 				&shim.Column{Value: &shim.Column_String_{String_: year}},
 				&shim.Column{Value: &shim.Column_String_{String_: universityName}},
+				}})
+
+		if err != nil {
+			return nil, err 
+		}
+		if !ok && err == nil {
+			return nil, errors.New("Row already exists.")
+		}
+			
+		return nil, nil
+
+}
+
+//Issue Experience Details to registered user
+func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+if len(args) != 6 {
+			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 6. Got: %d.", len(args))
+		}
+		uniqueIdNumber:=args[0]
+		doj:=args[1]
+		designation:=args[2]
+		skillset:=args[3]
+		certification:=args[4]
+		salary:=args[5]
+		
+		
+		
+		assignerOrg, err := stub.GetState(uniqueIdNumber)
+		if assignerOrg !=nil{
+			return nil, fmt.Errorf("Candidate already registered %s",uniqueIdNumber)
+		} else if err !=nil{
+			return nil, fmt.Errorf("System error")
+		}
+		
+		
+		// Insert a row
+		ok, err := stub.InsertRow("ExperienceDetails", shim.Row{
+			Columns: []*shim.Column{
+				&shim.Column{Value: &shim.Column_String_{String_: uniqueIdNumber}},
+				&shim.Column{Value: &shim.Column_String_{String_: doj}},
+				&shim.Column{Value: &shim.Column_String_{String_: designation}},
+				&shim.Column{Value: &shim.Column_String_{String_: skillset}},
+				&shim.Column{Value: &shim.Column_String_{String_: certification}},
+				&shim.Column{Value: &shim.Column_String_{String_: salary}},
 				}})
 
 		if err != nil {
