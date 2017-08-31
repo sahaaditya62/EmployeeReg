@@ -774,15 +774,13 @@ if len(args) < 1 {
 
 }
 
-
-func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting experienceId to query")
+		return nil, errors.New("Incorrect number of arguments. Expecting certificateId to query")
 	}
-		
 	candidateId := args[0]
-	//append the experience against candidateId
+	//append the certificate against candidateId
 	experience, err := stub.GetState("EXPERIENCE:"+candidateId)
 	var experienceString []string
 		err = json.Unmarshal([]byte(experience), &experienceString)
@@ -794,7 +792,7 @@ func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeSt
 	arrayExperience.ExperienceDetails=make([]ExperienceDetails,0)
 	
 	for _, experienceId := range experienceString {
-		// Get the row pertaining to this experienceId
+		// Get the row pertaining to this certificateId
 		var columns []shim.Column
 		col1 := shim.Column{Value: &shim.Column_String_{String_: experienceId}}
 		columns = append(columns, col1)
@@ -823,13 +821,15 @@ func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeSt
 		newCan.DOJ = row.Columns[7].GetString_()
 		arrayExperience.ExperienceDetails=append(arrayExperience.ExperienceDetails,newCan)		
 	}
+
+	
+		
     mapB, _ := json.Marshal(arrayExperience)
     fmt.Println(string(mapB))
 
 	return mapB, nil
 
 }
-
 
 func (t *CandidateInfoStore) getCandidateDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
