@@ -569,9 +569,9 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 	//append the certificate against candidateId
 	certificate, err := stub.GetState("CERTIFICATE:"+candidateId)
 	var certificateString []string
-		err = json.Unmarshal([]byte(certificate), &certificateString)
+		err = json.Unmarshal(certificate, &certificateString)
 		if err != nil {
-			return nil, errors.New("Row already exists.")
+			return nil, errors.New("Error occured in retreiving value")
 		}
 	
 	arrayCertificate := CertificatesDetails{}
@@ -784,9 +784,9 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 	//append the certificate against candidateId
 	experience, err := stub.GetState("EXPERIENCE:"+candidateId)
 	var experienceString []string
-		err = json.Unmarshal([]byte(experience), &experienceString)
+		err = json.Unmarshal(experience, &experienceString)
 		if err != nil {
-			return nil, errors.New("Row already exists.")
+			return nil, errors.New("Error occured in retreiving value")
 		}
 	
 	arrayExperience := ExperiencesDetails{}
