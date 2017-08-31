@@ -609,12 +609,13 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 
 
 //Issue experience to register a user
-	func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	if len(args) != 6 {
+func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+if len(args) != 8 {
 			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 6. Got: %d.", len(args))
 		}
 		
-	//getting experienceId
+		//getting certifiactionId
 		
 		Avalbytes, err := stub.GetState("EXPERIENCEINCREAMENTER")
 		Aval, _ := strconv.ParseInt(string(Avalbytes), 10, 0)
@@ -622,10 +623,12 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 
 		newASNincrement:= strconv.Itoa(newAval)
 		stub.PutState("EXPERIENCEINCREAMENTER", []byte(newASNincrement))
+
 		
+
 		experienceUniqueid:=string(Avalbytes)
+		
 		experienceId:=experienceUniqueid
-		fmt.Printf("experienceId---%v\n", experienceId)
 		candidateId:=args[0]
 		organization:=args[1]
 		doj:=args[2]
@@ -634,6 +637,16 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 		certification:=args[5]
 		salary:=args[6]
 		dol:=args[7]
+		
+		
+		assignerOrg, err := stub.GetState(experienceId)
+		if assignerOrg !=nil{
+			return nil, fmt.Errorf("Candidate already registered %s",experienceId)
+		} else if err !=nil{
+			return nil, fmt.Errorf("System error")
+		}
+		
+		
 		// Insert a row
 		ok, err := stub.InsertRow("ExperienceDetails", shim.Row{
 			Columns: []*shim.Column{
@@ -657,29 +670,28 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 		
 		//append the experience against candidateId
 		experience, err := stub.GetState("EXPERIENCE:"+candidateId)
-		fmt.Printf("experience---%v\n", experience)
 		if experience !=nil{
 			var experienceString []string
 			err = json.Unmarshal([]byte(experience), &experienceString)
 			if err != nil {
 				return nil, errors.New("Row already exists.")
 			}
-			experienceString =append(experienceString, experienceId)
+			experienceString = append(experienceString, experienceId)
 			outputMapBytes, _ := json.Marshal(experienceString)			
 			stub.PutState("EXPERIENCE:"+candidateId, []byte(outputMapBytes))				
 		} else{
 			var experience []string
 			
-			experience=append(experience, experienceId)
+			experience = append(experience, experienceId)
 			outputMapBytes, _ := json.Marshal(experience)			
-			stub.PutState("EXPERIENCE:"+candidateId, []byte(outputMapBytes))
-			fmt.Printf("EXPERIENCEcandidateId---%v\n", candidateId)			
+			stub.PutState("EXPERIENCE:"+candidateId, []byte(outputMapBytes))	
 		}
-					
+		
+			
+			
 		return nil, nil
 
 }
-
 
 
 //Update Experience Details to verified a user
@@ -760,10 +772,10 @@ if len(args) < 1 {
 func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
-		return nil, errors.New("Incorrect number of arguments. Expecting certificateId to query")
+		return nil, errors.New("Incorrect number of arguments. Expecting experienceId to query")
 	}
 	candidateId := args[0]
-	//append the certificate against candidateId
+	//append the experience against candidateId
 	experience, err := stub.GetState("EXPERIENCE:"+candidateId)
 	var experienceString []string
 		err = json.Unmarshal(experience, &experienceString)
@@ -775,7 +787,7 @@ func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeSt
 	arrayExperience.ExperienceDetails=make([]ExperienceDetails,0)
 	
 	for _, experienceId := range experienceString {
-		// Get the row pertaining to this certificateId
+		// Get the row pertaining to this experienceId
 		var columns []shim.Column
 		col1 := shim.Column{Value: &shim.Column_String_{String_: experienceId}}
 		columns = append(columns, col1)
@@ -795,19 +807,17 @@ func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeSt
 
 		newCan := ExperienceDetails{}
 		newCan.ExperienceId = row.Columns[0].GetString_()
-		newCan.Organization = row.Columns[1].GetString_()
-		newCan.DOJ = row.Columns[2].GetString_()
-		newCan.Designation = row.Columns[3].GetString_()
-		newCan.Skillset = row.Columns[4].GetString_()
-		newCan.Certification = row.Columns[5].GetString_()
-		newCan.Salary = row.Columns[6].GetString_()
-		newCan.DOJ = row.Columns[7].GetString_()
+		newCan.CandidateId = row.Columns[1].GetString_()
+		newCan.Organization = row.Columns[2].GetString_()
+		newCan.DOJ = row.Columns[3].GetString_()
+		newCan.Designation = row.Columns[4].GetString_()
+		newCan.Skillset = row.Columns[5].GetString_()
+		newCan.Certification = row.Columns[6].GetString_()
+		newCan.Salary = row.Columns[7].GetString_()
+		newCan.DOJ = row.Columns[8].GetString_()
 		arrayExperience.ExperienceDetails=append(arrayExperience.ExperienceDetails,newCan)		
 	}
-
-	
-		
-    mapB, _ := json.Marshal(arrayExperience)
+	mapB, _ := json.Marshal(arrayExperience)
     fmt.Println(string(mapB))
 
 	return mapB, nil
