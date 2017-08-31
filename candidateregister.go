@@ -554,6 +554,7 @@ if len(args) < 1 {
 
 }
 
+/*
 func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
@@ -612,7 +613,7 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 
 	return mapB, nil
 
-}
+}*/
 
 
 //Issue experience to register a user
@@ -966,11 +967,7 @@ func (t *CandidateInfoStore) Query(stub shim.ChaincodeStubInterface, function st
     } else if function == "getAllCertificateByCandidateId"{
         t := CandidateInfoStore{}
 		return t.getAllCertificateByCandidateId(stub, args)  
-    } else if function == "getAllExperienceByCandidateId"{
-        t := CandidateInfoStore{}
-		return t.getAllExperienceByCandidateId(stub, args)  
-    }
-	
+    } 	
 	return nil, nil
 }
 
