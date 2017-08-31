@@ -421,7 +421,7 @@ if len(args) != 6 {
 		newAval:=int(Aval) + 1
 
 		newASNincrement:= strconv.Itoa(newAval)
-		stub.PutState("ASNincrement", []byte(newASNincrement))
+		stub.PutState("CERTIFICATEINCREAMENTER", []byte(newASNincrement))
 
 		
 
@@ -630,7 +630,7 @@ if len(args) != 6 {
 		newAval:=int(Aval) + 1
 
 		newASNincrement:= strconv.Itoa(newAval)
-		stub.PutState("ASNincrement", []byte(newASNincrement))
+		stub.PutState("EXPERIENCEINCREAMENTER", []byte(newASNincrement))
 
 		
 
