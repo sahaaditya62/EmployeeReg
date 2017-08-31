@@ -560,11 +560,6 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting certificateId to query")
 	}
-	
-	
-	
-	
-
 	candidateId := args[0]
 	//append the certificate against candidateId
 	certificate, err := stub.GetState("CERTIFICATE:"+candidateId)
@@ -617,13 +612,12 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 
 
 //Issue experience to register a user
-func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-
-if len(args) != 6 {
+	func (t *CandidateInfoStore) addExperienceDetails(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	if len(args) != 6 {
 			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 6. Got: %d.", len(args))
 		}
 		
-		//getting certifiactionId
+	//getting certifiactionId
 		
 		Avalbytes, err := stub.GetState("EXPERIENCEINCREAMENTER")
 		Aval, _ := strconv.ParseInt(string(Avalbytes), 10, 0)
@@ -631,11 +625,7 @@ if len(args) != 6 {
 
 		newASNincrement:= strconv.Itoa(newAval)
 		stub.PutState("EXPERIENCEINCREAMENTER", []byte(newASNincrement))
-
-		
-
 		experienceUniqueid:=string(Avalbytes)
-		
 		experienceId:=experienceUniqueid
 		candidateId:=args[0]
 		organization:=args[1]
@@ -646,19 +636,11 @@ if len(args) != 6 {
 		salary:=args[6]
 		dol:=args[7]
 		
-		
-		assignerOrg, err := stub.GetState(experienceId)
-		if assignerOrg !=nil{
-			return nil, fmt.Errorf("Candidate already registered %s",experienceId)
-		} else if err !=nil{
-			return nil, fmt.Errorf("System error")
-		}
-		
-		
 		// Insert a row
 		ok, err := stub.InsertRow("ExperienceDetails", shim.Row{
 			Columns: []*shim.Column{
 				&shim.Column{Value: &shim.Column_String_{String_: experienceId}},
+				&shim.Column{Value: &shim.Column_String_{String_: candidateId}},
 				&shim.Column{Value: &shim.Column_String_{String_: organization}},
 				&shim.Column{Value: &shim.Column_String_{String_: doj}},
 				&shim.Column{Value: &shim.Column_String_{String_: designation}},
