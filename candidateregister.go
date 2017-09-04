@@ -593,11 +593,12 @@ func (t *CandidateInfoStore) getAllCertificateByCandidateId(stub shim.ChaincodeS
 
 		newCan := CertificateDetails{}
 		newCan.CertificateId = row.Columns[0].GetString_()
-		newCan.Degree = row.Columns[1].GetString_()
-		newCan.Marks = row.Columns[2].GetString_()
-		newCan.Grade = row.Columns[3].GetString_()
-		newCan.Year = row.Columns[4].GetString_()
-		newCan.UniversityName = row.Columns[5].GetString_()
+		newCan.CandidateId = row.Columns[1].GetString_()
+		newCan.Degree = row.Columns[2].GetString_()
+		newCan.Marks = row.Columns[3].GetString_()
+		newCan.Grade = row.Columns[4].GetString_()
+		newCan.Year = row.Columns[5].GetString_()
+		newCan.UniversityName = row.Columns[6].GetString_()
 		arrayCertificate.CertificateDetails=append(arrayCertificate.CertificateDetails,newCan)		
 	}
 	mapB, _ := json.Marshal(arrayCertificate)
@@ -814,7 +815,7 @@ func (t *CandidateInfoStore) getAllExperienceByCandidateId(stub shim.ChaincodeSt
 		newCan.Skillset = row.Columns[5].GetString_()
 		newCan.Certification = row.Columns[6].GetString_()
 		newCan.Salary = row.Columns[7].GetString_()
-		newCan.DOJ = row.Columns[8].GetString_()
+		newCan.DOL = row.Columns[8].GetString_()
 		arrayExperience.ExperienceDetails=append(arrayExperience.ExperienceDetails,newCan)		
 	}
 	mapB, _ := json.Marshal(arrayExperience)
